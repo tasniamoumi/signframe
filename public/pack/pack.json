@@ -1,0 +1,11 @@
+{
+  "name": "Signframe originals",
+  "cards": [
+    { "name": "Rei", "title": "Moonlight archer", "art": "builtin:rei", "colors": ["#0d3440", "#1f8a8a"] },
+    { "name": "Daku", "title": "Fire swordsman", "art": "builtin:daku", "colors": ["#3a0f14", "#c4482f"] },
+    { "name": "Mio", "title": "Illusionist", "art": "builtin:mio", "colors": ["#1c1647", "#6b4fd1"] },
+    { "name": "Kaze", "title": "Wind runner", "art": "builtin:kaze", "colors": ["#123154", "#3b9ae1"] },
+    { "name": "Tsuchi", "title": "Earth guardian", "art": "builtin:tsuchi", "colors": ["#1c2a18", "#5d7f3a"] },
+    { "name": "Yoru", "title": "Shadow rival", "art": "builtin:yoru", "colors": ["#0a0a0f", "#6b5417"] }
+  ]
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>signframe</title>
+  <meta name="description" content="Make a hand sign to change the world behind you, then frame a character with your hands. Runs in your browser; the camera image never leaves your device.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2311131a'/%3E%3Cpath d='M7 10l18-3-2 16-14 2z' fill='%235a2a55' stroke='%23ffd166' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>signframe</h1>
+      <p class="tagline">Make a hand sign to change the world behind you. Then frame a character with your hands.</p>
+    </div>
+    <a class="source" href="https://github.com/tasniamoumi/signframe">Source on GitHub</a>
+  </header>
+
+  <main>
+    <section class="stage" id="stage" aria-label="Camera view">
+      <canvas id="view" width="960" height="540"></canvas>
+      <canvas id="overlay" width="960" height="540" aria-hidden="true"></canvas>
+      <video id="video" playsinline muted hidden></video>
+
+      <div class="start" id="start">
+        <h2>Start with your camera, or watch the demo</h2>
+        <p>The camera image is processed in this browser tab. Nothing is uploaded or stored.</p>
+        <div class="row">
+          <button class="btn primary" id="start-camera" type="button">Use my camera</button>
+          <button class="btn" id="start-demo" type="button">Watch the demo</button>
+        </div>
+        <p class="error" id="error" role="alert" hidden></p>
+      </div>
+
+      <p class="hint" id="hint" role="status" aria-live="polite" hidden></p>
+      <p class="readout" id="readout" hidden></p>
+      <div class="count-in" id="count-in" hidden></div>
+    </section>
+
+    <section class="panel" aria-label="Controls">
+      <div class="group">
+        <h2 id="worlds-title">World</h2>
+        <div class="chips" id="worlds" role="radiogroup" aria-labelledby="worlds-title"></div>
+        <p class="note" id="world-note">Make a world's sign to enter it. Make the same sign again to come back to your room.</p>
+      </div>
+      <div class="group split">
+        <div>
+          <h2 id="cast-title">Character in the frame</h2>
+          <div class="chips" id="cast" role="radiogroup" aria-labelledby="cast-title"></div>
+        </div>
+        <div class="actions">
+          <label class="check"><input type="checkbox" id="show-hands" checked> Show hand points</label>
+          <label class="check" id="swap-wrap" hidden><input type="checkbox" id="swap-mask"> Swap cut-out</label>
+          <button class="btn" id="stop" type="button" hidden>Stop</button>
+        </div>
+      </div>
+    </section>
+
+    <details class="panel" id="teach-panel" hidden>
+      <summary>Teach your signs <span class="note" id="teach-status"></span></summary>
+      <div class="teach">
+        <p class="note">The app learns each sign from examples of your own hands. Press Record, get into position during the countdown, then hold the sign and move your hands a little nearer, further and side to side. Record "Not a sign" while holding the frame and while your hands are relaxed in view.</p>
+        <table>
+          <thead><tr><th>Sign</th><th>Examples</th><th></th></tr></thead>
+          <tbody id="teach-rows"></tbody>
+        </table>
+        <div class="row" style="justify-content:flex-start">
+          <button class="btn" id="export" type="button">Save examples to a file</button>
+          <label class="btn" for="import">Load examples from a file</label>
+          <input class="file" id="import" type="file" accept="application/json,.json">
+          <button class="btn" id="clear-all" type="button">Clear all</button>
+        </div>
+        <p class="note" id="teach-score"></p>
+      </div>
+    </details>
+
+    <section class="guide" aria-label="How to use it">
+      <h2>How it works</h2>
+      <dl>
+        <div><dt>1. Make a sign</dt><dd>Hold one of your taught two-hand signs for about half a second. The room behind you becomes that sign's world.</dd></div>
+        <div><dt>2. Make the frame</dt><dd>Hold up both hands with thumbs and index fingers out. A character appears between them.</dd></div>
+        <div><dt>3. Next character</dt><dd>Drop the frame and make it again.</dd></div>
+      </dl>
+      <p class="note">Keyboard: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> enter a world, <kbd>0</kbd> returns to the room, <kbd>N</kbd> next character, <kbd>H</kbd> shows or hides hand points.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Hand tracking and background cut-out by MediaPipe, running on your device. The characters and worlds are original to this project.</p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

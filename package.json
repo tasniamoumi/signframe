@@ -1,0 +1,23 @@
+{
+  "name": "signframe",
+  "version": "1.0.0",
+  "description": "Hand signs change the world behind you; a frame made with your hands shows a cast of characters",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "copy-wasm": "node scripts/copy-wasm.mjs",
+    "predev": "npm run copy-wasm",
+    "dev": "vite",
+    "prebuild": "npm run copy-wasm",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.3"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
