@@ -93,3 +93,28 @@ h1::before { border-radius: 50% 8% 50% 8%; }
 details.panel > summary { cursor: pointer; font-weight: 600; }
 details.panel[open] > summary { margin-bottom: 14px; }
 .status-ok { color: #8fd19a; } .status-warn { color: var(--accent); }
+
+/* ---- futuristic skin ---- */
+:root { --ink: #05070d; --panel: rgba(18, 24, 38, .72); --line: rgba(120, 220, 255, .22); --text: #e9f6ff; --muted: #8fa6bd;
+  --accent: #5af0ff; --accent-ink: #021318; --display: "Chakra Petch", "Eurostile", "Segoe UI", system-ui, sans-serif; }
+html { background: #05070d; }
+body { background:
+    radial-gradient(900px 500px at 85% -10%, rgba(255, 79, 200, .14), transparent 60%),
+    radial-gradient(900px 600px at 0% 0%, rgba(90, 240, 255, .12), transparent 60%),
+    linear-gradient(rgba(120, 220, 255, .045) 1px, transparent 1px) 0 0 / 100% 34px,
+    #05070d; background-attachment: fixed; }
+h1 { font: 700 34px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 0 18px rgba(90, 240, 255, .55); }
+h1::before { border-color: var(--accent); box-shadow: 0 0 12px rgba(90, 240, 255, .7); }
+h2, .chip, .btn, summary { font-family: var(--display); letter-spacing: .03em; }
+.stage { border-color: rgba(90, 240, 255, .45); box-shadow: 0 0 0 1px rgba(90, 240, 255, .12), 0 0 40px rgba(90, 240, 255, .14), 0 20px 60px rgba(0, 0, 0, .6); }
+.start { background: radial-gradient(120% 90% at 50% 0%, #10203a, #05070d 70%); }
+.panel { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
+.btn { background: rgba(90, 240, 255, .08); border-color: rgba(90, 240, 255, .35); }
+.btn:hover:not(:disabled) { background: rgba(90, 240, 255, .18); box-shadow: 0 0 16px rgba(90, 240, 255, .3); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 0 18px rgba(90, 240, 255, .45); }
+.btn.primary:hover:not(:disabled) { background: #8af6ff; }
+.chip { border-color: rgba(120, 220, 255, .28); }
+.chip[aria-checked="true"] { box-shadow: 0 0 14px rgba(90, 240, 255, .5); }
+.hint, .readout { background: rgba(5, 10, 18, .72); border: 1px solid rgba(90, 240, 255, .3); color: #cfefff; }
+.count-in { text-shadow: 0 0 24px rgba(90, 240, 255, .8); }
+kbd { background: rgba(90, 240, 255, .08); border-color: rgba(90, 240, 255, .3); }

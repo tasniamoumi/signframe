@@ -249,75 +249,176 @@ export function drawCharacter(ctx, id, cx, cy, u) {
   if (c.mark === "moon") mark(ctx, "moon", cx, hy + headH * 0.42, 9 * u, c.eye);
 }
 
-/** Draws one full card (background, character, name, title, mark) into ctx at CARD_W x CARD_H. */
-export function drawBuiltinCard(ctx, card) {
-  const id = card.art.replace("builtin:", "");
-  const c = CAST[id] ?? CAST.rei;
-  const g = ctx.createLinearGradient(0, 0, CARD_W, CARD_H);
-  g.addColorStop(0, card.colors[0]);
-  g.addColorStop(1, card.colors[1]);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, CARD_W, CARD_H);
-  ctx.strokeStyle = "rgba(255,255,255,.07)";
-  ctx.lineWidth = 26;
-  for (let i = -3; i < 9; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * 110, CARD_H);
-    ctx.lineTo(i * 110 + 260, 0);
-    ctx.stroke();
-  }
-  ctx.save();
-  ctx.globalAlpha = 0.16;
-  mark(ctx, c.mark, CARD_W * 0.78, CARD_H * 0.42, 150, "#fff");
-  ctx.restore();
-  drawCharacter(ctx, id, CARD_W * 0.34, CARD_H * 0.86, 1.3);
-  drawLabels(ctx, card, c.mark);
+export const FONT = '"Chakra Petch", "Eurostile", "Segoe UI", system-ui, sans-serif';
+const MONO = 'ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace';
+
+function layer() {
+  const canvas = document.createElement("canvas");
+  canvas.width = CARD_W;
+  canvas.height = CARD_H;
+  return canvas;
 }
 
-export function drawLabels(ctx, card, markKind) {
-  const shade = ctx.createLinearGradient(0, CARD_H * 0.55, 0, CARD_H);
-  shade.addColorStop(0, "rgba(0,0,0,0)");
-  shade.addColorStop(1, "rgba(0,0,0,.55)");
-  ctx.fillStyle = shade;
-  ctx.fillRect(0, CARD_H * 0.55, CARD_W, CARD_H * 0.45);
+/** Back layer: dark glass, a glowing core in the card's colour, and a floor grid in perspective. */
+function drawBack(ctx, card, markKind) {
+  ctx.fillStyle = "#05070d";
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  const core = ctx.createRadialGradient(CARD_W * 0.36, CARD_H * 0.5, 10, CARD_W * 0.36, CARD_H * 0.5, CARD_W * 0.7);
+  core.addColorStop(0, card.colors[1]);
+  core.addColorStop(0.55, card.colors[0]);
+  core.addColorStop(1, "rgba(5,7,13,0)");
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  ctx.globalAlpha = 1;
+  // floor grid converging on a horizon
+  const horizon = CARD_H * 0.62;
+  ctx.strokeStyle = "rgba(255,255,255,.16)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = -14; i <= 14; i++) {
+    ctx.moveTo(CARD_W / 2 + i * 14, horizon);
+    ctx.lineTo(CARD_W / 2 + i * 90, CARD_H);
+  }
+  for (let j = 1; j <= 7; j++) {
+    const y = horizon + (CARD_H - horizon) * (j / 7) ** 2;
+    ctx.moveTo(0, y);
+    ctx.lineTo(CARD_W, y);
+  }
+  ctx.stroke();
+  if (markKind) {
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.shadowColor = card.colors[1];
+    ctx.shadowBlur = 40;
+    mark(ctx, markKind, CARD_W * 0.76, CARD_H * 0.4, 130, "#fff");
+    ctx.restore();
+  }
+  const edge = ctx.createRadialGradient(CARD_W / 2, CARD_H / 2, CARD_H * 0.35, CARD_W / 2, CARD_H / 2, CARD_W * 0.72);
+  edge.addColorStop(0, "rgba(0,0,0,0)");
+  edge.addColorStop(1, "rgba(0,0,0,.7)");
+  ctx.fillStyle = edge;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+}
+
+/** Middle layer: the character as a hologram (colour-shifted, lit from the edge, with scan lines). */
+function drawHologram(ctx, id, accent) {
+  drawCharacter(ctx, id, CARD_W * 0.34, CARD_H * 0.88, 1.32);
+  ctx.globalCompositeOperation = "source-atop";
+  const tint = ctx.createLinearGradient(0, 0, CARD_W * 0.7, CARD_H);
+  tint.addColorStop(0, "rgba(90,240,255,.42)");
+  tint.addColorStop(0.55, "rgba(120,140,255,.18)");
+  tint.addColorStop(1, "rgba(255,80,220,.4)");
+  ctx.fillStyle = tint;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  const rim = ctx.createLinearGradient(CARD_W * 0.08, 0, CARD_W * 0.62, 0);
+  rim.addColorStop(0, accent);
+  rim.addColorStop(0.2, "rgba(255,255,255,0)");
+  rim.addColorStop(0.82, "rgba(255,255,255,0)");
+  rim.addColorStop(1, "rgba(255,255,255,.75)");
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = rim;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.fillStyle = "rgba(0,0,0,.22)";
+  for (let y = 0; y < CARD_H; y += 5) ctx.fillRect(0, y, CARD_W, 1.6);
+  const fade = ctx.createLinearGradient(0, CARD_H * 0.82, 0, CARD_H);
+  fade.addColorStop(0, "rgba(0,0,0,0)");
+  fade.addColorStop(1, "rgba(0,0,0,.85)");
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, CARD_H * 0.82, CARD_W, CARD_H * 0.18);
+  ctx.globalCompositeOperation = "source-over";
+}
+
+/** Front layer: name, title, read-outs and corner brackets. Floats in front of the frame. */
+function drawHud(ctx, card, index, total, markKind) {
+  const accent = card.colors[1];
+  ctx.shadowColor = accent;
+  ctx.shadowBlur = 18;
   ctx.textAlign = "right";
   ctx.fillStyle = "#fff";
-  ctx.font = '800 64px "Avenir Next", "Segoe UI", system-ui, sans-serif';
-  ctx.fillText(card.name.toUpperCase(), CARD_W - 34, CARD_H - 70);
-  ctx.font = '500 24px "Avenir Next", "Segoe UI", system-ui, sans-serif';
-  ctx.fillStyle = "rgba(255,255,255,.85)";
-  ctx.fillText(card.title, CARD_W - 36, CARD_H - 34);
-  if (markKind) mark(ctx, markKind, CARD_W - 60, 58, 24, "rgba(255,255,255,.9)");
-  ctx.strokeStyle = "rgba(255,255,255,.5)";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(3, 3, CARD_W - 6, CARD_H - 6);
+  ctx.font = `700 76px ${FONT}`;
+  ctx.fillText(card.name.toUpperCase(), CARD_W - 40, CARD_H - 92);
+  ctx.shadowBlur = 8;
+  ctx.font = `500 24px ${FONT}`;
+  ctx.fillStyle = "rgba(255,255,255,.9)";
+  ctx.fillText(card.title.toUpperCase(), CARD_W - 42, CARD_H - 56);
+  ctx.font = `600 15px ${MONO}`;
+  ctx.fillStyle = "rgba(255,255,255,.7)";
+  ctx.fillText(`UNIT ${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`, CARD_W - 42, CARD_H - 28);
+  ctx.textAlign = "left";
+  ctx.fillText("SIGNFRAME // LINK STABLE", 40, 44);
+  // three read-out bars; the lengths are decoration derived from the name, not real stats
+  let seed = [...card.name].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  for (let i = 0; i < 3; i++) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const len = 60 + (seed / 233280) * 90;
+    ctx.fillStyle = "rgba(255,255,255,.25)";
+    ctx.fillRect(CARD_W - 202, 92 + i * 16, 160, 5);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(CARD_W - 202, 92 + i * 16, len, 5);
+  }
+  if (markKind) mark(ctx, markKind, CARD_W - 64, 54, 22, "#fff");
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  for (const [x, y, dx, dy] of [[16, 16, 1, 1], [CARD_W - 16, 16, -1, 1], [16, CARD_H - 16, 1, -1], [CARD_W - 16, CARD_H - 16, -1, -1]]) {
+    ctx.moveTo(x + dx * 44, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + dy * 44);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
 }
 
-/** Builds one canvas per card. Image cards are loaded from the pack folder and cropped to fill. */
+/**
+ * Builds the three layers of every card: {back, figure, hud, accent}. Built-in characters are
+ * drawn in code; image cards use the picture as the back layer and have no separate figure.
+ */
 export async function buildCards(pack, baseUrl) {
-  return Promise.all(pack.cards.map(async (card) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = CARD_W;
-    canvas.height = CARD_H;
-    const ctx = canvas.getContext("2d");
+  try {
+    await Promise.race([document.fonts.load(`700 76px ${FONT}`), new Promise((r) => setTimeout(r, 1500))]);
+  } catch {
+    /* the fallback font is fine */
+  }
+  return Promise.all(pack.cards.map(async (card, index) => {
+    const back = layer();
+    const hud = layer();
+    let figure = null;
+    let markKind = null;
+    const bctx = back.getContext("2d");
     if (card.art.startsWith("builtin:")) {
-      drawBuiltinCard(ctx, card);
-      return canvas;
+      const id = card.art.replace("builtin:", "");
+      markKind = (CAST[id] ?? CAST.rei).mark;
+      drawBack(bctx, card, markKind);
+      const flat = layer();
+      drawHologram(flat.getContext("2d"), id, card.colors[1]);
+      figure = layer(); // the glow is baked in here once, so it costs nothing per frame
+      const gctx = figure.getContext("2d");
+      gctx.shadowColor = card.colors[1];
+      gctx.shadowBlur = 22;
+      gctx.drawImage(flat, 0, 0);
+    } else {
+      try {
+        const img = new Image();
+        img.src = `${baseUrl}${card.art}`;
+        await img.decode();
+        const scale = Math.max(CARD_W / img.width, CARD_H / img.height);
+        bctx.drawImage(img, (CARD_W - img.width * scale) / 2, (CARD_H - img.height * scale) / 2, img.width * scale, img.height * scale);
+        const shade = bctx.createLinearGradient(0, CARD_H * 0.5, 0, CARD_H);
+        shade.addColorStop(0, "rgba(0,0,0,0)");
+        shade.addColorStop(1, "rgba(0,0,0,.6)");
+        bctx.fillStyle = shade;
+        bctx.fillRect(0, 0, CARD_W, CARD_H);
+      } catch {
+        drawBack(bctx, card, null);
+        bctx.fillStyle = "#fff";
+        bctx.font = `24px ${MONO}`;
+        bctx.fillText(`Could not load ${card.art}`, 40, 90);
+      }
     }
-    try {
-      const img = new Image();
-      img.src = `${baseUrl}${card.art}`;
-      await img.decode();
-      const scale = Math.max(CARD_W / img.width, CARD_H / img.height);
-      ctx.drawImage(img, (CARD_W - img.width * scale) / 2, (CARD_H - img.height * scale) / 2, img.width * scale, img.height * scale);
-    } catch {
-      ctx.fillStyle = "#2a2f3c";
-      ctx.fillRect(0, 0, CARD_W, CARD_H);
-      ctx.fillStyle = "#fff";
-      ctx.font = "24px system-ui, sans-serif";
-      ctx.fillText(`Could not load ${card.art}`, 30, 60);
-    }
-    drawLabels(ctx, card, null);
-    return canvas;
+    drawHud(hud.getContext("2d"), card, index, pack.cards.length, markKind);
+    return { back, figure, hud, accent: card.colors[1] };
   }));
 }

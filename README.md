@@ -1,11 +1,11 @@
 # signframe
 
-Make a hand sign and the room behind you becomes an anime-style world. Then hold up
-a frame with your hands and a character appears inside it; drop the frame and make
+Make a hand sign and the room behind you becomes a neon, futuristic world. Then hold
+up a frame with your hands and a hologram of a character appears inside it; drop the frame and make
 it again for the next one. It runs in the browser, and the camera image never leaves
 your device.
 
-![Demo mode: simulated hands make a sign, the room turns into a dusk valley, and a frame held between the hands shows three characters in turn; two more signs switch to a storm and a moonlit shrine](docs/demo.gif)
+![Demo mode: simulated hands make a sign, an energy ring spreads out and the room turns into a neon grid under a banded sun, a glowing hologram panel between the hands shows three characters in turn, and two more signs switch to a rainy neon city and a ringed planet over a glowing grid](docs/demo.gif)
 
 _Demo mode. The person, hands and signs here are simulated so the page can be tried
 without a camera; they run through the same recognition code as real hands._
@@ -16,14 +16,17 @@ without a camera; they run through the same recognition code as real hands._
 
 ## What it does
 
-- **Signs change the world.** Three signs, three worlds: Ember Valley, Storm Peak and
-  Moon Shrine. Hold a sign for about half a second to enter its world; make the same
+- **Signs change the world.** Three signs, three worlds: Ember Grid, Neon City and
+  Orbit Shrine. Hold a sign for about half a second to enter its world; make the same
   sign again to return to your room.
 - **The background is replaced, not you.** A segmentation model separates you from
-  your room, and the world is drawn behind you.
+  your room, and the world is drawn behind you, with a rim of
+  its light around you.
 - **The frame shows the cast.** Thumbs and index fingers make a four-cornered frame,
-  and a character card is drawn inside it in perspective. Re-making the frame moves
-  to the next of six original characters.
+  and a hologram panel is drawn inside it in perspective. The panel has three layers
+  (background, figure, read-outs) that float at different depths and slide against
+  each other as you turn the frame. Re-making the frame moves to the next of six
+  original characters.
 - **You teach the signs.** Record a few seconds of each sign with your own hands; the
   app learns from those examples in the browser. Examples can be saved to a file.
 - **Keyboard:** `1` `2` `3` enter a world, `0` returns to the room, `N` next
@@ -97,9 +100,9 @@ src/cards.js       card cycling, pack validation                           (test
 src/warp.js        perspective drawing with a triangle mesh                (tested)
 src/frame.js       frame corners, homography, smoothing                    (tested)
 src/demo.js        simulated person, hands and signs                       (tested)
-src/art.js         the six characters, drawn in code
-src/worlds.js      the three worlds, drawn in code
-src/compose.js     world + cut-out person + card on one canvas
+src/art.js         the six characters and the three layers of each hologram card
+src/worlds.js      the three worlds, drawn in code with perspective grids and glow
+src/compose.js     world + cut-out person + layered card + energy ring on one canvas
 src/segment.js     MediaPipe selfie segmenter
 src/tracking.js    MediaPipe hand landmarker
 src/main.js        start-up, the frame loop, teaching, controls
@@ -123,7 +126,10 @@ src/main.js        start-up, the frame loop, teaching, controls
 - **The cut-out is rough at the edges.** Hair and fingers can flicker or show a halo.
 - Two models are downloaded from Google's model host on first use (about 8 MB).
   Without a connection to it, only demo mode works.
-- Tested in a headless Chromium only. Not yet tried on phones or Safari.
+- **It is drawn on a 2D canvas, not a 3D engine.** The depth comes from perspective
+  grids, layers and glow. Real 3D models are not supported.
+- Tested in a headless Chromium only, where it ran at about 30 frames a second with
+  software rendering. Not yet tried on phones or Safari.
 
 ## Credit
 

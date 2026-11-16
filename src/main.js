@@ -40,7 +40,7 @@ const state = {
   swapMask: false,
   quad: null,
   cardAlpha: 0,
-  flashAt: -Infinity,
+  burst: null,          // {x, y, at, color}: the energy ring when a sign lands
   fps: 0,
   lastFrameAt: 0,
   lastScriptTime: 0,
@@ -79,8 +79,15 @@ function enterWorld(index, nowMs = performance.now()) { // 0 = room
   if (state.show.world === target) return;
   if (target) state.show.sign(target, nowMs);
   else state.show.sign(state.show.world, nowMs);
-  state.flashAt = nowMs;
+  startBurst(target, nowMs, null);
   paintControls();
+}
+function startBurst(worldId, nowMs, hands) {
+  const world = WORLDS.find((w) => w.id === worldId);
+  const centre = hands && hands.length === 2
+    ? { x: (hands[0][9].x + hands[1][9].x) / 2, y: (hands[0][9].y + hands[1][9].y) / 2 }
+    : { x: 0.5, y: 0.6 };
+  state.burst = { ...centre, at: nowMs, color: world?.accent ?? "#ffffff" };
 }
 function pickCard(index) {
   if (!state.show) return;
@@ -341,6 +348,8 @@ function drawSignRing(ctx, hands, nowMs, w, h) {
   ctx.stroke();
 }
 
+const accentOf = (worldId) => WORLDS.find((w) => w.id === worldId)?.accent ?? "#ffffff";
+
 function frame(nowMs) {
   if (!state.running) return;
   const source = state.source;
@@ -366,7 +375,7 @@ function frame(nowMs) {
   state.guess = guess;
   const event = state.detector.update(guess, nowMs);
   if (event && state.show.sign(event, nowMs)) {
-    state.flashAt = nowMs;
+    startBurst(state.show.world, nowMs, hands);
     paintControls();
   }
 
@@ -376,19 +385,19 @@ function frame(nowMs) {
   if (state.show.cards.index !== before) paintControls();
   if (framed) state.quad = smoother.update(cornersFromHands(hands), nowMs);
   else smoother.reset();
-  state.cardAlpha += ((card !== null ? 1 : 0) - state.cardAlpha) * 0.3;
+  state.cardAlpha += ((card !== null ? 1 : 0) - state.cardAlpha) * 0.22;
   if (state.cardAlpha < 0.02) state.cardAlpha = 0;
 
   if (world) source.updateMask(nowMs);
   const sinceChange = nowMs - state.show.changedAt;
   compositor.draw({
     source,
-    world: world ? { id: world, amount: Math.min(1, sinceChange / 350) } : null,
-    card: state.quad && state.cardAlpha > 0 && world ? { canvas: state.cardCanvases[state.show.cards.index], quad: state.quad, alpha: state.cardAlpha } : null,
-    flash: Math.max(0, 1 - (nowMs - state.flashAt) / 450) * 0.9,
+    world: world ? { id: world, amount: Math.min(1, sinceChange / 350), accent: accentOf(world) } : null,
+    card: state.quad && state.cardAlpha > 0 && world ? { layers: state.cardCanvases[state.show.cards.index], quad: state.quad, alpha: state.cardAlpha } : null,
+    burst: state.burst ? { ...state.burst, age: (nowMs - state.burst.at) / 700 } : null,
     time: nowMs / 1000,
   });
-  drawOverlay(overlay, { width, height, hands, quad: framed && world ? state.quad : null, showHands: state.showHands });
+  drawOverlay(overlay, { width, height, hands, showHands: state.showHands, color: world ? accentOf(world) : "#ffffff" });
   drawSignRing(overlay.getContext("2d"), hands, nowMs, width, height);
 
   if (state.lastFrameAt) state.fps += (1000 / Math.max(nowMs - state.lastFrameAt, 1) - state.fps) * 0.08;
